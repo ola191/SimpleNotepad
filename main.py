@@ -1,5 +1,7 @@
+import os
+
 import sys 
-from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QHBoxLayout
+from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton
 from PySide6.QtGui import QIcon, QPalette, QColor
 
 class MainWindow(QMainWindow):
@@ -22,8 +24,37 @@ class MainWindow(QMainWindow):
         self.navWidget = QWidget()
         self.navWidget.setAutoFillBackground(True)
         navWidgetPallette = self.navWidget.palette()
-        navWidgetPallette.setColor(QPalette.Window, QColor(215, 215, 215))
+        navWidgetPallette.setColor(QPalette.Window, QColor(225, 225, 225))
         self.navWidget.setPalette(navWidgetPallette)
+
+        navLayout = QVBoxLayout(self.navWidget)
+        navLayout.setContentsMargins(10,10,10,10)
+        navLayout.setSpacing(10)
+
+        username = os.getlogin()
+
+        titleLabel = QLabel(f"{username}")
+        titleLabel.setStyleSheet("font-size: 20px; font-weight: bold; margin-bottom: 20px;")
+        navLayout.addWidget(titleLabel)
+
+        buttons = ["New File", "Open File", "Save File", "Close File", "Settings"]
+        for button in buttons:
+            btn = QPushButton(button)
+            btn.setStyleSheet("""
+                QPushButton {
+                    background-color: rgb(235, 235, 235);
+                    border-radius: 5px;
+                    padding: 10px;
+                    font-size: 12pt;
+                    text-align: left;
+                }
+                QPushButton:hover {
+                    background-color: #e0e0e0;
+                }
+            """)
+            navLayout.addWidget(btn)
+    
+        navLayout.addStretch()
 
         self.bodyWidget = QWidget()
         self.bodyWidget.setAutoFillBackground(True)
