@@ -98,7 +98,7 @@ class MainWindow(QMainWindow):
         self.navWidget = QWidget()
         self.navWidget.setAutoFillBackground(True)
         navWidgetPallette = self.navWidget.palette()
-        navWidgetPallette.setColor(QPalette.Window, QColor(225, 225, 225))
+        navWidgetPallette.setColor(QPalette.Window, QColor(244, 249, 254))
         self.navWidget.setPalette(navWidgetPallette)
 
         navLayout = QVBoxLayout(self.navWidget)
