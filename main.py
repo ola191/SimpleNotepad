@@ -1,8 +1,10 @@
 import os
 import sys
-from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton
-from PySide6.QtGui import QIcon, QPalette, QColor, QPixmap, QCursor
+from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QHBoxLayout, QVBoxLayout, QLabel, QPushButton, QGraphicsBlurEffect
+from PySide6.QtGui import QIcon, QPalette, QColor, QPixmap, QCursor, QBrush, QLinearGradient
 from PySide6.QtCore import Qt, QSize, QRect, QTimer
+
+from BlurWindow.blurWindow import blur
 
 class CustomTitleBar(QWidget):
     def __init__(self, parent=None):
@@ -164,9 +166,16 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle("WindowTitle")
         self.setMinimumSize(1200, 750)
+
         self.setWindowFlags(Qt.FramelessWindowHint)
-        # self.setWindowIcon(QIcon("icon.png"))
+        self.setAttribute(Qt.WA_TranslucentBackground)
+        
+        hWnd = self.winId()
+        print(hWnd)
+        blur(hWnd)
+
         self.buildUI()
+        
         self.setMouseTracking(True)
         self.resizing = False
         self.resizeDir = None
@@ -181,6 +190,15 @@ class MainWindow(QMainWindow):
 
         self.titleBar = CustomTitleBar(self)
         mainLayout.addWidget(self.titleBar)
+        self.setCustomTitleBarBackground()
+
+        whiteBar = QWidget()
+        whiteBar.setFixedHeight(64)
+        whiteBar.setAutoFillBackground(True)
+        palette = whiteBar.palette()
+        palette.setColor(QPalette.Window, QColor(255, 255, 255))
+        whiteBar.setPalette(palette)
+        mainLayout.addWidget(whiteBar)
 
         contentLayout = QHBoxLayout()
         contentLayout.setContentsMargins(0, 0, 0, 0)
@@ -189,26 +207,25 @@ class MainWindow(QMainWindow):
         self.navWidget = QWidget()
         self.navWidget.setAutoFillBackground(True)
         navWidgetPallette = self.navWidget.palette()
-        navWidgetPallette.setColor(QPalette.Window, QColor(244, 249, 254))
+        navWidgetPallette.setColor(QPalette.Window, QColor(244, 249, 254, 60))
         self.navWidget.setPalette(navWidgetPallette)
+        self.setNavBackground()
 
         navLayout = QVBoxLayout(self.navWidget)
         navLayout.setContentsMargins(10,10,10,10)
         navLayout.setSpacing(10)
 
-        username = os.getlogin()
-        titleLabel = QLabel(f"{username}")
-        titleLabel.setStyleSheet("font-size: 20px; font-weight: bold; margin-bottom: 20px;")
-        navLayout.addWidget(titleLabel)
+        # username = os.getlogin()
+        # titleLabel = QLabel(f"{username}")
+        # titleLabel.setStyleSheet("font-size: 20px; font-weight: bold; margin-bottom: 20px;")
+        # navLayout.addWidget(titleLabel)
 
         buttons = ["New File", "Open File", "Save File", "Close File", "Settings"]
         for button in buttons:
             btn = QPushButton(button)
             btn.setStyleSheet("""
                 QPushButton {
-                    background-color: rgb(235, 235, 235);
-                    border-radius: 5px;
-                    padding: 10px;
+                    background-color: transparent;
                     font-size: 12pt;
                     text-align: left;
                 }
@@ -222,13 +239,45 @@ class MainWindow(QMainWindow):
         self.bodyWidget = QWidget()
         self.bodyWidget.setAutoFillBackground(True)
         bodyWidgetPallette = self.bodyWidget.palette()
-        bodyWidgetPallette.setColor(QPalette.Window, QColor(255, 255, 255))
+        bodyWidgetPallette.setColor(QPalette.Window, QColor(255, 255, 255, 255))
         self.bodyWidget.setPalette(bodyWidgetPallette)
 
         contentLayout.addWidget(self.navWidget, 1)
         contentLayout.addWidget(self.bodyWidget, 3)
 
         mainLayout.addLayout(contentLayout)
+
+    def setNavBackground(self):
+        gradient = QLinearGradient(0, 0, 0, self.navWidget.height())
+        # gradient.setColorAt(0, QColor(214, 183, 222, 250))
+        # gradient.setColorAt(1, QColor(198, 210, 234, 250))
+
+        gradient.setColorAt(0, QColor(255, 255, 255, 150))
+        gradient.setColorAt(1, QColor(255, 255, 255, 150))
+
+        blurEffect = QGraphicsBlurEffect()
+        blurEffect.setBlurRadius(200)
+
+        palette = self.navWidget.palette()
+        palette.setBrush(QPalette.Window, QBrush(gradient))
+        self.navWidget.setPalette(palette)
+        self.navWidget.setGraphicsEffect(blurEffect)
+
+    def setCustomTitleBarBackground(self):
+        gradient = QLinearGradient(0, 0, 0, self.titleBar.height())
+        # gradient.setColorAt(0, QColor(214, 183, 222, 0))
+        # gradient.setColorAt(1, QColor(198, 210, 234, 0))
+
+        gradient.setColorAt(0, QColor(255, 255, 255, 150))
+        gradient.setColorAt(1, QColor(255, 255, 255, 150))
+
+        blurEffect = QGraphicsBlurEffect()
+        blurEffect.setBlurRadius(1000)
+
+        palette = self.titleBar.palette()
+        palette.setBrush(QPalette.Window, QBrush(gradient))
+        self.titleBar.setPalette(palette)
+        self.titleBar.setGraphicsEffect(blurEffect)
 
     def resizeEvent(self, event):
         size = event.size()
@@ -249,62 +298,12 @@ class MainWindow(QMainWindow):
 
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
-            # self.oldPos = event.globalPos()
-            # self.oldSize = self.size()
             if self.resizeDir:
                 self.resizing = True
             else:
                 self.moving = True
 
     def mouseMoveEvent(self, event):
-        # if self.resizing:
-        #     delta = event.globalPos() - self.oldPos
-        #     if self.resizeDir == "top":
-        #         self.setGeometry(self.x(), self.y() + delta.y(), self.width(), self.oldSize.height() - delta.y())
-        #     elif self.resizeDir == "bottom":
-        #         self.setGeometry(self.x(), self.y(), self.width(), self.oldSize.height() + delta.y())
-        #     elif self.resizeDir == "left":
-        #         self.setGeometry(self.x() + delta.x(), self.y(), self.oldSize.width() - delta.x(), self.height())
-        #     elif self.resizeDir == "right":
-        #         self.setGeometry(self.x(), self.y(), self.oldSize.width() + delta.x(), self.height())
-        #     elif self.resizeDir == "top_left":
-        #         self.setGeometry(self.x() + delta.x(), self.y() + delta.y(), self.oldSize.width() - delta.x(), self.oldSize.height() - delta.y())
-        #     elif self.resizeDir == "top_right":
-        #         self.setGeometry(self.x(), self.y() + delta.y(), self.oldSize.width() + delta.x(), self.oldSize.height() - delta.y())
-        #     elif self.resizeDir == "bottom_left":
-        #         self.setGeometry(self.x() + delta.x(), self.y(), self.oldSize.width() - delta.x(), self.oldSize.height() + delta.y())
-        #     elif self.resizeDir == "bottom_right":
-        #         self.setGeometry(self.x(), self.y(), self.oldSize.width() + delta.x(), self.oldSize.height() + delta.y())
-        # else:
-        #     pos = event.pos()
-        #     margins = 10
-        #     if pos.x() < margins and pos.y() < margins:
-        #         self.setCursor(Qt.SizeFDiagCursor)
-        #         self.resizeDir = "top_left"
-        #     elif pos.x() > self.width() - margins and pos.y() < margins:
-        #         self.setCursor(Qt.SizeBDiagCursor)
-        #         self.resizeDir = "top_right"
-        #     elif pos.x() < margins and pos.y() > self.height() - margins:
-        #         self.setCursor(Qt.SizeBDiagCursor)
-        #         self.resizeDir = "bottom_left"
-        #     elif pos.x() > self.width() - margins and pos.y() > self.height() - margins:
-        #         self.setCursor(Qt.SizeFDiagCursor)
-        #         self.resizeDir = "bottom_right"
-        #     elif pos.x() < margins:
-        #         self.setCursor(Qt.SizeHorCursor)
-        #         self.resizeDir = "left"
-        #     elif pos.x() > self.width() - margins:
-        #         self.setCursor(Qt.SizeHorCursor)
-        #         self.resizeDir = "right"
-        #     elif pos.y() < margins:
-        #         self.setCursor(Qt.SizeVerCursor)
-        #         self.resizeDir = "top"
-        #     elif pos.y() > self.height() - margins:
-        #         self.setCursor(Qt.SizeVerCursor)
-        #         self.resizeDir = "bottom"
-        #     else:
-        #         self.setCursor(Qt.ArrowCursor)
-        #         self.resizeDir = None
         pass
 
     def mouseReleaseEvent(self, event):
