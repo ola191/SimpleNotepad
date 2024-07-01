@@ -1,8 +1,8 @@
-from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QPushButton
-from PySide6.QtGui import QIcon, QPalette, QColor, QPixmap, QCursor
+from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QPushButton, QGraphicsBlurEffect
+from PySide6.QtGui import QIcon, QPalette, QColor, QPixmap, QCursor, QBrush, QLinearGradient
 from PySide6.QtCore import Qt, QSize, QRect, QTimer
 
-class CustomTitleBar(QWidget):
+class ComponentCustomTitleBar(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setFixedHeight(32)
@@ -88,6 +88,19 @@ class CustomTitleBar(QWidget):
             self.window().showNormal()
         else:
             self.window().showMaximized()
+
+    def setCustomTitleBarBackground(self):
+        gradient = QLinearGradient(0, 0, 0, self.height())
+        gradient.setColorAt(0, QColor(255, 200, 225, 100))
+        gradient.setColorAt(1, QColor(255, 200, 225, 100))
+
+        blurEffect = QGraphicsBlurEffect()
+        blurEffect.setBlurRadius(200)
+
+        palette = self.palette()
+        palette.setBrush(QPalette.Window, QBrush(gradient))
+        self.setPalette(palette)
+        self.setGraphicsEffect(blurEffect)
 
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:

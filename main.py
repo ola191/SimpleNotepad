@@ -6,7 +6,11 @@ from PySide6.QtCore import Qt, QSize, QRect, QTimer
 
 from BlurWindow.blurWindow import blur
 
-from components.CustomTitleBar import CustomTitleBar
+from components.BodyArea import ComponentBodyArea
+from components.CustomTitleBar import ComponentCustomTitleBar
+from components.FilesBar import ComponentFilesBar
+from components.MenuBar import ComponentMenuBar
+from components.NavSideBar import ComponentNavSideBar
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -18,7 +22,6 @@ class MainWindow(QMainWindow):
         self.setAttribute(Qt.WA_TranslucentBackground)
         
         hWnd = self.winId()
-        print(hWnd)
         blur(hWnd)
 
         self.buildUI()
@@ -31,100 +34,47 @@ class MainWindow(QMainWindow):
         mainWidget = QWidget()
         self.setCentralWidget(mainWidget)
 
+        #!Main layout
         mainLayout = QVBoxLayout(mainWidget)
         mainLayout.setContentsMargins(0, 0, 0, 0)
         mainLayout.setSpacing(0)
 
-        self.titleBar = CustomTitleBar(self)
+        #*Title bar
+        self.titleBar = ComponentCustomTitleBar(self)
         mainLayout.addWidget(self.titleBar)
-        self.setCustomTitleBarBackground()
+        ComponentCustomTitleBar.setCustomTitleBarBackground(self.titleBar)
+        
+        #*Files bar
+        self.filesBar = ComponentFilesBar(self)
+        mainLayout.addWidget(self.filesBar)
 
-        whiteBar = QWidget()
-        whiteBar.setFixedHeight(64)
-        whiteBar.setAutoFillBackground(True)
-        palette = whiteBar.palette()
-        palette.setColor(QPalette.Window, QColor(255, 255, 255))
-        whiteBar.setPalette(palette)
-        mainLayout.addWidget(whiteBar)
+        #*Menu bar
+        self.menuBar = ComponentMenuBar(self)
+        mainLayout.addWidget(self.menuBar)
 
+        #!Content layout
         contentLayout = QHBoxLayout()
         contentLayout.setContentsMargins(0, 0, 0, 0)
         contentLayout.setSpacing(0)
 
-        self.navWidget = QWidget()
-        self.navWidget.setAutoFillBackground(True)
-        navWidgetPallette = self.navWidget.palette()
-        navWidgetPallette.setColor(QPalette.Window, QColor(244, 249, 254, 60))
-        self.navWidget.setPalette(navWidgetPallette)
-        self.setNavBackground()
+        #*Nav side bar
+        self.navWidget = ComponentNavSideBar(self)
 
-        navLayout = QVBoxLayout(self.navWidget)
-        navLayout.setContentsMargins(10,10,10,10)
-        navLayout.setSpacing(10)
+        #*Body area
+        self.bodyWidget = ComponentBodyArea(self)
 
-        # username = os.getlogin()
-        # titleLabel = QLabel(f"{username}")
-        # titleLabel.setStyleSheet("font-size: 20px; font-weight: bold; margin-bottom: 20px;")
-        # navLayout.addWidget(titleLabel)
+        # webView = QWidget()
 
-        buttons = ["New File", "Open File", "Save File", "Close File", "Settings"]
-        for button in buttons:
-            btn = QPushButton(button)
-            btn.setStyleSheet("""
-                QPushButton {
-                    background-color: transparent;
-                    font-size: 12pt;
-                    text-align: left;
-                }
-                QPushButton:hover {
-                    background-color: #e0e0e0;
-                }
-            """)
-            navLayout.addWidget(btn)
-        navLayout.addStretch()
-
-        self.bodyWidget = QWidget()
-        self.bodyWidget.setAutoFillBackground(True)
-        bodyWidgetPallette = self.bodyWidget.palette()
-        bodyWidgetPallette.setColor(QPalette.Window, QColor(255, 255, 255, 255))
-        self.bodyWidget.setPalette(bodyWidgetPallette)
+        #!Body layout
+        bodyLayout = QVBoxLayout(self.bodyWidget)
+        bodyLayout.setContentsMargins(0, 0, 0, 0)
+        bodyLayout.setSpacing(0)
+        # bodyLayout.addWidget(webView)
 
         contentLayout.addWidget(self.navWidget, 1)
         contentLayout.addWidget(self.bodyWidget, 3)
 
         mainLayout.addLayout(contentLayout)
-
-    def setNavBackground(self):
-        gradient = QLinearGradient(0, 0, 0, self.navWidget.height())
-        # gradient.setColorAt(0, QColor(214, 183, 222, 250))
-        # gradient.setColorAt(1, QColor(198, 210, 234, 250))
-
-        gradient.setColorAt(0, QColor(255, 255, 255, 150))
-        gradient.setColorAt(1, QColor(255, 255, 255, 150))
-
-        blurEffect = QGraphicsBlurEffect()
-        blurEffect.setBlurRadius(200)
-
-        palette = self.navWidget.palette()
-        palette.setBrush(QPalette.Window, QBrush(gradient))
-        self.navWidget.setPalette(palette)
-        self.navWidget.setGraphicsEffect(blurEffect)
-
-    def setCustomTitleBarBackground(self):
-        gradient = QLinearGradient(0, 0, 0, self.titleBar.height())
-        # gradient.setColorAt(0, QColor(214, 183, 222, 0))
-        # gradient.setColorAt(1, QColor(198, 210, 234, 0))
-
-        gradient.setColorAt(0, QColor(255, 255, 255, 150))
-        gradient.setColorAt(1, QColor(255, 255, 255, 150))
-
-        blurEffect = QGraphicsBlurEffect()
-        blurEffect.setBlurRadius(1000)
-
-        palette = self.titleBar.palette()
-        palette.setBrush(QPalette.Window, QBrush(gradient))
-        self.titleBar.setPalette(palette)
-        self.titleBar.setGraphicsEffect(blurEffect)
 
     def resizeEvent(self, event):
         size = event.size()
