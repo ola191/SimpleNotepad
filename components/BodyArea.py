@@ -1,6 +1,6 @@
 import json
 import os
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QMessageBox, QFileDialog
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QMessageBox, QFileDialog, QProgressBar
 from PySide6.QtWebEngineWidgets import QWebEngineView
 from PySide6.QtCore import QObject, Signal, Slot, QThread
 from PySide6.QtWebChannel import QWebChannel
@@ -15,12 +15,14 @@ class Worker(QObject):
 
 class ComponentBodyArea(QWidget):
     contentChanged = Signal(str)
+    fileSizeUpdated = Signal(float)
 
     def __init__(self, parent=None):
         super().__init__(parent)
         self.initUi()
         self.currentFilePath = None
         self.currentContent = "<p>Click here and start typing...</p>"
+        self.totalFileSizes = []  # List to store file sizes for progress calculation
 
     def initUi(self):
         self.layout = QVBoxLayout(self)
@@ -47,7 +49,7 @@ class ComponentBodyArea(QWidget):
             </body>
             </html>
         """)
-        
+
         self.layout.addWidget(self.webView)
 
         self.worker = Worker()
@@ -96,11 +98,18 @@ class ComponentBodyArea(QWidget):
     @Slot(str)
     def contentChanged(self, content):
         self.currentContent = content
-    
+        self.calculateTotalSize(content)
+
+    def calculateTotalSize(self, content):
+        file_size_kb = len(content.encode('utf-8')) / 1024
+        self.totalFileSizes.append(file_size_kb)
+        total_size_mb = sum(self.totalFileSizes) / 1024
+        self.fileSizeUpdated.emit(total_size_mb)
+
     def callbackFunc(self, html):
         self.currentContent = html
         self.saveFileContent()
-    
+
     def toHtml(self, save=False):
         if save:
             self.webView.page().runJavaScript(
@@ -153,6 +162,8 @@ class ComponentBodyArea(QWidget):
                         data = json.load(file)
                         for item in data:
                             print(f"Previously saved file: {item['path']} ({item['size_kb']} kB)")
+                            # Update total file size list
+                            self.totalFileSizes.append(item['size_kb'])
                     except json.JSONDecodeError:
                         print("Error loading file paths: JSONDecodeError - the file is empty or corrupted.")
         except Exception as e:

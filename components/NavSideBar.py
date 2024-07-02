@@ -1,12 +1,15 @@
 from datetime import datetime
-from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QPushButton, QGraphicsBlurEffect, QVBoxLayout, QFileDialog, QMessageBox 
+
+from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QPushButton, QGraphicsBlurEffect, QVBoxLayout, QFileDialog, QMessageBox, QProgressBar
 from PySide6.QtGui import QIcon, QPalette, QColor, QPixmap, QCursor, QBrush, QLinearGradient
-from PySide6.QtCore import Qt, QSize, QRect, QTimer
+from PySide6.QtCore import Qt, QSize, QRect, QTimer, Signal
 from PySide6.QtWebEngineWidgets import QWebEngineView
 
 from components.BodyArea import ComponentBodyArea
 
 class ComponentNavSideBar(QWidget):
+    fileSizeUpdated = Signal(float)
+
     def __init__(self, mainWindow):
         super().__init__(mainWindow)
         self.bodyArea = mainWindow.bodyWidget
@@ -68,8 +71,50 @@ class ComponentNavSideBar(QWidget):
         shadow.setBlurRadius(20)
         bottomWidget.setGraphicsEffect(shadow)
 
+        self.progressBar = QProgressBar()
+        self.progressBar.setRange(0, 100)
+        self.progressBar.setTextVisible(True)
+        self.progressBar.setStyleSheet("""
+            QProgressBar {
+                border: 1px solid grey;
+                border-radius: 5px;
+                text-align: center;
+            }
+            QProgressBar::chunk {
+                background-color: #05B8CC;
+                width: 20px;
+            }
+        """)
+
+        bottomLayout = QVBoxLayout(bottomWidget)
+        self.sizeLabel = QLabel("Memory used: 0 MB")
+        bottomLayout.addWidget(self.sizeLabel)
+        bottomLayout.addWidget(self.progressBar)
+
+
         navMainLayout.addLayout(navContentLayout)
         navMainLayout.addWidget(bottomWidget)
+
+        self.fileSizeUpdated.connect(self.updateProgressBar)
+
+    def updateProgressBar(self, totalSizeMB):
+        self.sizeLabel.setText(f"Memory used: {totalSizeMB:.2f} MB")
+        progress = min(totalSizeMB, 100)
+        self.progressBar.setValue(progress)
+
+        if totalSizeMB < 50:
+            color = "#05B8CC"  
+        elif totalSizeMB < 80:
+            color = "#FFD700"
+        else:
+            color = "#FF4500"
+
+        self.progressBar.setStyleSheet(f"""
+            QProgressBar::chunk {{
+                background-color: {color};
+                width: 20px;
+            }}
+        """)
 
     def newFile(self):
         options = QFileDialog.Options()
@@ -82,7 +127,7 @@ class ComponentNavSideBar(QWidget):
             content = """
             <html contenteditable="true">
             <body>
-                <p>fileName : {sFileName}, dateTIme : {dateTime}</p>
+                <p>fileName : {sFileName}<p>dateTIme : {dateTime}</p>
             </body>
             </html>
             """.format(sFileName=sFileName, dateTime=datetime.now().strftime("%d/%m/%Y %H:%M:%S"))

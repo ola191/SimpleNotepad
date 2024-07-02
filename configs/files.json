@@ -1,10 +1,18 @@
 [
     {
-        "path": "C:/path/file.ntp",
-        "size_kb": 648.080078125
+        "path": "C:/Users/olakr/Downloads/testt.ntp",
+        "size_kb": 308.310546875
     },
     {
-        "path": "C:/path/file2.ntp",
-        "size_kb": 0.4169921875
+        "path": "dadadad.ntp",
+        "size_kb": 307.67578125
+    },
+    {
+        "path": "dadadda.ntp",
+        "size_kb": 0.3662109375
+    },
+    {
+        "path": "ddddddddd.ntp",
+        "size_kb": 513.673828125
     }
 ]
