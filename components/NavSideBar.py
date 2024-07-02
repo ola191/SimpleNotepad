@@ -77,7 +77,11 @@ class ComponentNavSideBar(QWidget):
                 fileName += ".ntp"
             content = """
 
-<h1>New World</h1>
+            <html contenteditable="true">
+            <body>
+                <p>Click here and start typing...</p>
+            </body>
+            </html>
 
             """
             try:

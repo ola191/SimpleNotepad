@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout
 from PySide6.QtWebEngineWidgets import QWebEngineView
-from PySide6.QtCore import QObject, Signal, Slot, QThread, QTimer, QCoreApplication
+from PySide6.QtCore import QObject, Signal, Slot, QThread
 
 class Worker(QObject):
     htmlChanged = Signal(str)
@@ -18,7 +18,13 @@ class ComponentBodyArea(QWidget):
         self.layout.setContentsMargins(0, 0, 0, 0)
 
         self.webView = QWebEngineView()
-        self.webView.setHtml("")
+        self.webView.setHtml("""
+            <html contenteditable="true">
+            <body>
+                <p>Click here and start typing...</p>
+            </body>
+            </html>
+        """)
         self.layout.addWidget(self.webView)
 
         self.worker = Worker()
@@ -28,10 +34,28 @@ class ComponentBodyArea(QWidget):
 
         self.worker.htmlChanged.connect(self.updateHtml)
 
+        self.webView.page().runJavaScript("""
+            document.body.addEventListener('input', function() {
+                window.qtbridge.contentChanged(document.body.innerHTML);
+            });
+        """)
+
+        self.webView.page().setWebChannel(self.createWebChannel())
+
+    def createWebChannel(self):
+        from PySide6.QtWebChannel import QWebChannel
+        channel = QWebChannel()
+        channel.registerObject("qtbridge", self)
+        return channel
+
     @Slot(str)
     def updateHtml(self, content):
         print("Updating content:", content)
         self.webView.setHtml(content)
+
+    @Slot(str)
+    def contentChanged(self, content):
+        print("Content changed:", content)
 
     def loadNtpContent(self, content):
         try:
