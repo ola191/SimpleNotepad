@@ -1,3 +1,4 @@
+from datetime import datetime
 from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QPushButton, QGraphicsBlurEffect, QVBoxLayout, QFileDialog, QMessageBox 
 from PySide6.QtGui import QIcon, QPalette, QColor, QPixmap, QCursor, QBrush, QLinearGradient
 from PySide6.QtCore import Qt, QSize, QRect, QTimer
@@ -24,9 +25,9 @@ class ComponentNavSideBar(QWidget):
         navContentLayout.setContentsMargins(10, 10, 10, 10) 
         navContentLayout.setSpacing(10)
 
-        filesLabel = QLabel("Files")
-        filesLabel.setStyleSheet("font-size: 12pt; font-weight: semibold;")
-        navContentLayout.addWidget(filesLabel)
+        self.filesLabel = QLabel("File")
+        self.filesLabel.setStyleSheet("font-size: 12pt; font-weight: semibold;")
+        navContentLayout.addWidget(self.filesLabel)
 
         buttons = [
             ("New file", "assets/icons/New.png", self.newFile),
@@ -75,18 +76,21 @@ class ComponentNavSideBar(QWidget):
         if fileName:
             if not fileName.endswith(".ntp"):
                 fileName += ".ntp"
+            sFileName = fileName.split("/")[-1]
+            self.filesLabel.setText(f"File : {sFileName}")
             content = """
-
             <html contenteditable="true">
             <body>
-                <p>Click here and start typing...</p>
+                <p>fileName : {sFileName}</p>
+                <p>dateTIme : {dateTime}</p>
             </body>
             </html>
-
-            """
+            """.format(sFileName=sFileName, dateTime=datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
             try:
                 with open(fileName, "w") as file:
                     file.write(content)
+                
+                self.bodyArea.loadNtpContent(content, sFileName)
             except Exception as e:
                 QMessageBox.warning(self, "Error", f"An error ocurred while trying to create the file {fileName}")
 
@@ -94,16 +98,19 @@ class ComponentNavSideBar(QWidget):
     def openFile(self):
         options = QFileDialog.Options()
         fileName, _ = QFileDialog.getOpenFileName(self, "Open file", "", "Notepad Plus Files (*.ntp);;Notepad default Files (*.txt);;All Files (*)", options=options)
+        sFileName = fileName.split("/")[-1]
+        self.filesLabel.setText(f"File : {sFileName}")
         if fileName:
             try:
                 with open(fileName, "r") as file:
                     content = file.read()
-                    QTimer.singleShot(0, lambda: self.bodyArea.loadNtpContent(content))
+                    print("przekazuje ", content)
+                    QTimer.singleShot(0, lambda: self.bodyArea.loadNtpContent(content, fileName))
             except Exception as e:
-                QMessageBox.information(self, "File opened", f"File {fileName} opened")
+                QMessageBox.information(self, "File opened", f"File {sFileName} opened")
 
     def saveFile(self):
-        self.bodyArea.loadNtpContent("ababbaba")
+        self.bodyArea.saveFile()
 
 
     def setNavBackground(self):
