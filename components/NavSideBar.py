@@ -10,6 +10,7 @@ class ComponentNavSideBar(QWidget):
     def __init__(self, mainWindow):
         super().__init__(mainWindow)
         self.bodyArea = mainWindow.bodyWidget
+        self.titleBar = mainWindow.titleBar
 
         self.setAutoFillBackground(True)
         navWidgetPallette = self.palette()
@@ -77,12 +78,11 @@ class ComponentNavSideBar(QWidget):
             if not fileName.endswith(".ntp"):
                 fileName += ".ntp"
             sFileName = fileName.split("/")[-1]
-            self.filesLabel.setText(f"File : {sFileName}")
+            self.titleBar.fileNameTitle.setText(f"{sFileName}")
             content = """
             <html contenteditable="true">
             <body>
-                <p>fileName : {sFileName}</p>
-                <p>dateTIme : {dateTime}</p>
+                <p>fileName : {sFileName}, dateTIme : {dateTime}</p>
             </body>
             </html>
             """.format(sFileName=sFileName, dateTime=datetime.now().strftime("%d/%m/%Y %H:%M:%S"))
@@ -99,7 +99,7 @@ class ComponentNavSideBar(QWidget):
         options = QFileDialog.Options()
         fileName, _ = QFileDialog.getOpenFileName(self, "Open file", "", "Notepad Plus Files (*.ntp);;Notepad default Files (*.txt);;All Files (*)", options=options)
         sFileName = fileName.split("/")[-1]
-        self.filesLabel.setText(f"File : {sFileName}")
+        self.titleBar.fileNameTitle.setText(f"{sFileName}")
         if fileName:
             try:
                 with open(fileName, "r") as file:

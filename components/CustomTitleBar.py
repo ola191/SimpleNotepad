@@ -18,10 +18,15 @@ class ComponentCustomTitleBar(QWidget):
         self.windowIcon.setPixmap(QPixmap("assets/icons/logo.png").scaled(24, 24, Qt.KeepAspectRatio, Qt.SmoothTransformation))
         layout.addWidget(self.windowIcon)
 
-        self.titleLabel = QLabel("Notepad", self)
+        self.titleLabel = QLabel("Notepad :", self)
         self.titleLabel.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
         self.titleLabel.setStyleSheet("font-size: 14px; font-weight: semibold; color: #000000;")
         layout.addWidget(self.titleLabel)
+
+        self.fileNameTitle = QLabel("empty", self)
+        self.fileNameTitle.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+        self.fileNameTitle.setStyleSheet("font-size: 14px; font-weight: semibold; color: #000000;")
+        layout.addWidget(self.fileNameTitle)
 
         layout.addStretch()
 
