@@ -1,10 +1,15 @@
-from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QPushButton, QGraphicsBlurEffect, QVBoxLayout
+from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QPushButton, QGraphicsBlurEffect, QVBoxLayout, QFileDialog, QMessageBox 
 from PySide6.QtGui import QIcon, QPalette, QColor, QPixmap, QCursor, QBrush, QLinearGradient
 from PySide6.QtCore import Qt, QSize, QRect, QTimer
+from PySide6.QtWebEngineWidgets import QWebEngineView
+
+from components.BodyArea import ComponentBodyArea
 
 class ComponentNavSideBar(QWidget):
-    def __init__(self, parent=None):
-        super().__init__(parent)
+    def __init__(self, mainWindow):
+        super().__init__(mainWindow)
+        self.bodyArea = mainWindow.bodyWidget
+
         self.setAutoFillBackground(True)
         navWidgetPallette = self.palette()
         navWidgetPallette.setColor(QPalette.Window, QColor(244, 249, 254, 60))
@@ -24,12 +29,12 @@ class ComponentNavSideBar(QWidget):
         navContentLayout.addWidget(filesLabel)
 
         buttons = [
-            ("New file", "assets/icons/New.png"),
-            ("Open file", "assets/icons/Open.png"),
-            ("Save file", "assets/icons/Save.png"),
+            ("New file", "assets/icons/New.png", self.newFile),
+            ("Open file", "assets/icons/Open.png", self.openFile),
+            ("Save file", "assets/icons/Save.png", self.saveFile),
         ]
 
-        for text, icon_path in buttons:
+        for text, icon_path, callback in buttons:
             btn = QPushButton(f" {text}")
             btn.setIcon(QIcon(icon_path))
             btn.setContentsMargins(15, 0, 0, 0)
@@ -45,6 +50,7 @@ class ComponentNavSideBar(QWidget):
                 }
             """)
             btn.setLayoutDirection(Qt.LeftToRight)
+            btn.clicked.connect(callback)
             navContentLayout.addWidget(btn)
         navContentLayout.addStretch()
 
@@ -63,10 +69,44 @@ class ComponentNavSideBar(QWidget):
         navMainLayout.addLayout(navContentLayout)
         navMainLayout.addWidget(bottomWidget)
 
+    def newFile(self):
+        options = QFileDialog.Options()
+        fileName, _ = QFileDialog.getSaveFileName(self, "Create new file", "", "Notepad Plus Files (*.ntp);;Notepad default Files (*.txt);;All Files (*)", options=options)
+        if fileName:
+            if not fileName.endswith(".ntp"):
+                fileName += ".ntp"
+            content = """
+
+<h1>New World</h1>
+
+            """
+            try:
+                with open(fileName, "w") as file:
+                    file.write(content)
+            except Exception as e:
+                QMessageBox.warning(self, "Error", f"An error ocurred while trying to create the file {fileName}")
+
+
+    def openFile(self):
+        options = QFileDialog.Options()
+        fileName, _ = QFileDialog.getOpenFileName(self, "Open file", "", "Notepad Plus Files (*.ntp);;Notepad default Files (*.txt);;All Files (*)", options=options)
+        if fileName:
+            try:
+                with open(fileName, "r") as file:
+                    content = file.read()
+                    QTimer.singleShot(0, lambda: self.bodyArea.loadNtpContent(content))
+            except Exception as e:
+                QMessageBox.information(self, "File opened", f"File {fileName} opened")
+
+    def saveFile(self):
+        self.bodyArea.loadNtpContent("ababbaba")
+
+
     def setNavBackground(self):
-        gradient = QLinearGradient(0, 0, 0, self.height())
+        startPosY = self.height() + 200
+        gradient = QLinearGradient(0, startPosY, 0, 400)
         gradient.setColorAt(0, QColor(255, 200, 225, 100))
-        gradient.setColorAt(1, QColor(255, 200, 225, 100))
+        gradient.setColorAt(1, QColor(255, 175, 200, 159))
 
         blurEffect = QGraphicsBlurEffect()
         blurEffect.setBlurRadius(200)

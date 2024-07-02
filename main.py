@@ -21,8 +21,7 @@ class MainWindow(QMainWindow):
         self.setWindowFlags(Qt.FramelessWindowHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
         
-        hWnd = self.winId()
-        blur(hWnd)
+        # self.setStyleSheet("background-color: rgba(0, 0, 0, 255)")
 
         self.buildUI()
         
@@ -57,19 +56,12 @@ class MainWindow(QMainWindow):
         contentLayout.setContentsMargins(0, 0, 0, 0)
         contentLayout.setSpacing(0)
 
+        #*Body area
+        self.bodyWidget = ComponentBodyArea(self)
+        
         #*Nav side bar
         self.navWidget = ComponentNavSideBar(self)
 
-        #*Body area
-        self.bodyWidget = ComponentBodyArea(self)
-
-        # webView = QWidget()
-
-        #!Body layout
-        bodyLayout = QVBoxLayout(self.bodyWidget)
-        bodyLayout.setContentsMargins(0, 0, 0, 0)
-        bodyLayout.setSpacing(0)
-        # bodyLayout.addWidget(webView)
 
         contentLayout.addWidget(self.navWidget, 1)
         contentLayout.addWidget(self.bodyWidget, 3)
@@ -111,5 +103,7 @@ class MainWindow(QMainWindow):
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = MainWindow()
+    hWnd = window.winId()
+    blur(hWnd)
     window.show()
     sys.exit(app.exec())
