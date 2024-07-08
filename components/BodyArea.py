@@ -22,7 +22,7 @@ class ComponentBodyArea(QWidget):
         self.initUi()
         self.currentFilePath = None
         self.currentContent = "<p>Click here and start typing...</p>"
-        self.totalFileSizes = []  # List to store file sizes for progress calculation
+        self.totalFileSizes = []
 
     def initUi(self):
         self.layout = QVBoxLayout(self)
@@ -103,8 +103,8 @@ class ComponentBodyArea(QWidget):
     def calculateTotalSize(self, content):
         file_size_kb = len(content.encode('utf-8')) / 1024
         self.totalFileSizes.append(file_size_kb)
-        total_size_mb = sum(self.totalFileSizes) / 1024
-        self.fileSizeUpdated.emit(total_size_mb)
+        # total_size_kb = sum(self.totalFileSizes)
+        self.fileSizeUpdated.emit(file_size_kb)
 
     def callbackFunc(self, html):
         self.currentContent = html
@@ -162,7 +162,6 @@ class ComponentBodyArea(QWidget):
                         data = json.load(file)
                         for item in data:
                             print(f"Previously saved file: {item['path']} ({item['size_kb']} kB)")
-                            # Update total file size list
                             self.totalFileSizes.append(item['size_kb'])
                     except json.JSONDecodeError:
                         print("Error loading file paths: JSONDecodeError - the file is empty or corrupted.")

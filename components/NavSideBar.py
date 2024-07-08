@@ -87,24 +87,24 @@ class ComponentNavSideBar(QWidget):
         """)
 
         bottomLayout = QVBoxLayout(bottomWidget)
-        self.sizeLabel = QLabel("Memory used: 0 MB")
+        self.sizeLabel = QLabel("Memory used: 0 Kb")
         bottomLayout.addWidget(self.sizeLabel)
         bottomLayout.addWidget(self.progressBar)
-
 
         navMainLayout.addLayout(navContentLayout)
         navMainLayout.addWidget(bottomWidget)
 
         self.fileSizeUpdated.connect(self.updateProgressBar)
 
-    def updateProgressBar(self, totalSizeMB):
-        self.sizeLabel.setText(f"Memory used: {totalSizeMB:.2f} MB")
-        progress = min(totalSizeMB, 100)
+    def updateProgressBar(self, totalSizeKB):
+        print("total size", totalSizeKB)
+        self.sizeLabel.setText(f"Memory used: {totalSizeKB:.2f} Kb")
+        progress = min(totalSizeKB, 100)
         self.progressBar.setValue(progress)
 
-        if totalSizeMB < 50:
-            color = "#05B8CC"  
-        elif totalSizeMB < 80:
+        if totalSizeKB < 50:
+            color = "#05B8CC"
+        elif totalSizeKB < 80:
             color = "#FFD700"
         else:
             color = "#FF4500"

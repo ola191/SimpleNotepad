@@ -1,52 +1,52 @@
-from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QPushButton, QGraphicsBlurEffect
+from PySide6.QtWidgets import QWidget, QHBoxLayout, QLabel, QPushButton, QGraphicsBlurEffect, QDialog, QGridLayout
 from PySide6.QtGui import QIcon, QPalette, QColor, QPixmap, QCursor, QBrush, QLinearGradient
-from PySide6.QtCore import Qt, QSize, QRect, QTimer
+from PySide6.QtCore import Qt, QSize, QRect, QTimer, QPoint
 
 class ComponentCustomTitleBar(QWidget):
-    def __init__(self, parent=None):
-        super().__init__(parent)
+    def __init__(self, mainWindow):
+        super().__init__(mainWindow)
         self.setFixedHeight(32)
         self.setAutoFillBackground(True)
         palette = self.palette()
         palette.setColor(QPalette.Window, QColor(255, 255, 255))
         self.setPalette(palette)
 
-        layout = QHBoxLayout(self)
-        layout.setContentsMargins(5, 0, 5, 0)
+        self.layout = QHBoxLayout(self)
+        self.layout.setContentsMargins(5, 0, 5, 0)
 
         self.windowIcon = QLabel(self)
         self.windowIcon.setPixmap(QPixmap("assets/icons/logo.png").scaled(24, 24, Qt.KeepAspectRatio, Qt.SmoothTransformation))
-        layout.addWidget(self.windowIcon)
+        self.layout.addWidget(self.windowIcon)
 
         self.titleLabel = QLabel("Notepad :", self)
         self.titleLabel.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
         self.titleLabel.setStyleSheet("font-size: 14px; font-weight: semibold; color: #000000;")
-        layout.addWidget(self.titleLabel)
+        self.layout.addWidget(self.titleLabel)
 
         self.fileNameTitle = QLabel("empty", self)
         self.fileNameTitle.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
         self.fileNameTitle.setStyleSheet("font-size: 14px; font-weight: semibold; color: #000000;")
-        layout.addWidget(self.fileNameTitle)
+        self.layout.addWidget(self.fileNameTitle)
 
-        layout.addStretch()
+        self.layout.addStretch()
 
         self.minimizeButton = QPushButton(self)
         self.minimizeButton.setIcon(QIcon("assets/icons/minimize.png"))
         self.minimizeButton.setFixedSize(QSize(32, 32))
         self.minimizeButton.setIconSize(QSize(12, 12))
         self.minimizeButton.setStyleSheet("background: none; border: none;")
-        layout.addWidget(self.minimizeButton)
+        self.layout.addWidget(self.minimizeButton)
 
-        layout.addSpacing(15)
+        self.layout.addSpacing(15)
 
         self.maximizeButton = QPushButton(self)
         self.maximizeButton.setIcon(QIcon("assets/icons/maximize.png"))
         self.maximizeButton.setFixedSize(QSize(32, 32))
         self.maximizeButton.setIconSize(QSize(12, 12))
         self.maximizeButton.setStyleSheet("background: none; border: none;")
-        layout.addWidget(self.maximizeButton)
+        self.layout.addWidget(self.maximizeButton)
 
-        layout.addSpacing(15)
+        self.layout.addSpacing(15)
 
         self.closeButton = QPushButton(self)
         self.closeButton.setIcon(QIcon("assets/icons/close.png"))
@@ -62,9 +62,9 @@ class ComponentCustomTitleBar(QWidget):
                     border: 1px solid #C2567F;
                 }
             """)
-        layout.addWidget(self.closeButton)
+        self.layout.addWidget(self.closeButton)
 
-        layout.addSpacing(5)
+        self.layout.addSpacing(5)
 
         self.closeButton.clicked.connect(self.closeWindow)
         self.minimizeButton.clicked.connect(self.minimizeWindow)
@@ -75,10 +75,10 @@ class ComponentCustomTitleBar(QWidget):
         self.resizeDir = None
         self.click_count = 0
         self.timer = QTimer()
-        self.timer.setInterval(500)  # Interval for double/triple click detection
-        self.timer.timeout.connect(self.reset_click_count)
+        self.timer.setInterval(500) 
+        self.timer.timeout.connect(self.resetClickCount)
 
-    def reset_click_count(self):
+    def resetClickCount(self):
         self.click_count = 0
         self.timer.stop()
 
@@ -141,6 +141,32 @@ class ComponentCustomTitleBar(QWidget):
                 self.minimizeWindow()
                 self.click_count = 0
                 self.timer.stop()
+        elif event.button() == Qt.RightButton:
+            if self.childAt(event.pos()) == self.maximizeButton:
+
+                self.gridWidget = QWidget(self)
+                self.gridWidget.setStyleSheet("background-color: rgba(255, 255, 255, 0.9);")
+                self.gridWidget.setFixedSize(170, 170)
+
+                self.gridLayout = QGridLayout(self.gridWidget)
+                self.gridLayout.setSpacing(10)
+
+                for i in range(3):
+                    for j in range(3):
+                        btn = QPushButton(self.gridWidget)
+                        btn.setFixedSize(50, 50)
+                        btn.setStyleSheet("""
+                            QPushButton {
+                                background-color: #A9A9A9;
+                                border-radius: 10px;
+                                border: 1px solid #000000;
+                            }
+                        """)
+                        self.gridLayout.addWidget(btn, i, j)
+
+                cursorPos = self.mapFromGlobal(event.globalPos())
+                self.gridWidget.move(QPoint(self.childAt(event.pos()).pos().x() - 150, 20))
+                self.gridWidget.show()
 
     def mouseMoveEvent(self, event):
         if self.moving:

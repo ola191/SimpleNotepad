@@ -42,6 +42,7 @@ class MainWindow(QMainWindow):
         self.titleBar = ComponentCustomTitleBar(self)
         mainLayout.addWidget(self.titleBar)
         ComponentCustomTitleBar.setCustomTitleBarBackground(self.titleBar)
+        # self.titleBar.raise_()
         
         #*Files bar
         self.filesBar = ComponentFilesBar(self)
@@ -61,7 +62,6 @@ class MainWindow(QMainWindow):
         
         #*Nav side bar
         self.navWidget = ComponentNavSideBar(self)
-
 
         contentLayout.addWidget(self.navWidget, 1)
         contentLayout.addWidget(self.bodyWidget, 3)
