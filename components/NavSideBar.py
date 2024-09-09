@@ -97,6 +97,9 @@ class ComponentNavSideBar(QWidget):
         self.fileSizeUpdated.connect(self.updateProgressBar)
 
     def updateProgressBar(self, totalSizeKB):
+        
+        return
+        
         print("total size", totalSizeKB)
         self.sizeLabel.setText(f"Memory used: {totalSizeKB:.2f} Kb")
         progress = min(totalSizeKB, 100)
